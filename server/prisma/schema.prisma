@@ -1,0 +1,43 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  documents    Document[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Document {
+  id          String       @id @default(uuid())
+  title       String
+  fileName    String
+  filePath    String
+  mimeType    String
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  auditLogs   AuditLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  action     String
+  details    String?
+  userId     String
+  documentId String?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+}
